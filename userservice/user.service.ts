@@ -72,6 +72,7 @@ export const UserService = {
         };
         return await Fetch.post('/auth/verify-email', { email,token,password}, config);
     },
+    
     getUsers: async ({limit,page}:{limit:number,page:number}) => {
         const userToken = CookieHelper.get({ key: "access_token" });
         const config = {
