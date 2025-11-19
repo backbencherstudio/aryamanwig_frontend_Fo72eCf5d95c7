@@ -3,7 +3,6 @@ import { MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react"
 import { useState, useEffect } from "react"
 import DeleteModal from "../../components/common/delete-modal"
 
-// Sample user data - this would typically come from an API or database
 const userData = [
   {
     id: "01",
@@ -129,7 +128,6 @@ export default function ManageUsers() {
   })
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Load users from localStorage on component mount
   useEffect(() => {
     const savedUsers = localStorage.getItem('users')
     if (savedUsers) {
@@ -138,10 +136,8 @@ export default function ManageUsers() {
         setUsers(parsedUsers)
       } catch (error) {
         console.error('Error parsing users from localStorage:', error)
-        // If there's an error, keep the default userData
       }
     } else {
-      // Initialize localStorage with default data if it doesn't exist
       localStorage.setItem('users', JSON.stringify(userData))
     }
   }, [])
@@ -160,24 +156,8 @@ export default function ManageUsers() {
     })
   }
 
-  // Function to delete user from database (replace with your actual API call)
   const deleteUserFromDatabase = async (userId: string) => {
-    // Simulate API call to database
     await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Replace this with your actual API call
-    // Example:
-    // const response = await fetch(`/api/users/${userId}`, {
-    //   method: 'DELETE',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    // })
-    // 
-    // if (!response.ok) {
-    //   throw new Error('Failed to delete user from database')
-    // }
-    
     console.log(`User ${userId} deleted from database`)
   }
 
@@ -187,17 +167,13 @@ export default function ManageUsers() {
     setIsDeleting(true)
     
     try {
-      // Delete from database first
       await deleteUserFromDatabase(deleteModal.userId)
       
-      // Remove from local state
       setUsers(prevUsers => prevUsers.filter(user => user.id !== deleteModal.userId))
       
-      // Update localStorage
       const updatedUsers = users.filter(user => user.id !== deleteModal.userId)
       localStorage.setItem('users', JSON.stringify(updatedUsers))
       
-      // Adjust current page if needed
       const newTotalPages = Math.ceil(updatedUsers.length / itemsPerPage)
       if (currentPage > newTotalPages && newTotalPages > 0) {
         setCurrentPage(newTotalPages)
@@ -207,7 +183,6 @@ export default function ManageUsers() {
       
     } catch (error) {
       console.error('Error deleting user:', error)
-      // You could add a toast notification here for error handling
       alert('Failed to delete user. Please try again.')
     } finally {
       setIsDeleting(false)
@@ -236,7 +211,6 @@ export default function ManageUsers() {
   const renderPaginationButtons = () => {
     const buttons = []
     
-    // Previous button
     buttons.push(
       <button
         key="prev"
@@ -248,7 +222,6 @@ export default function ManageUsers() {
       </button>
     )
 
-    // Page numbers
     for (let i = 1; i <= totalPages; i++) {
       if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
         buttons.push(
@@ -277,7 +250,6 @@ export default function ManageUsers() {
       }
     }
 
-    // Next button
     buttons.push(
       <button
         key="next"
@@ -294,14 +266,12 @@ export default function ManageUsers() {
 
   return (
     <div className="w-full p-4 bg-white rounded-xl shadow-[0px_4px_33px_8px_rgba(0,0,0,0.04)] border border-gray-200">
-      {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-gray-600 text-lg font-semibold font-sans leading-snug">
           Active Users ({users.length})
         </h2>
       </div>
 
-      {/* Empty State */}
       {users.length === 0 ? (
         <div className="text-center py-12">
           <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
@@ -312,7 +282,6 @@ export default function ManageUsers() {
         </div>
       ) : (
         <>
-          {/* Table */}
           <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
             <table className="w-full text-sm text-left rtl:text-right text-gray-500">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50">
@@ -381,14 +350,12 @@ export default function ManageUsers() {
             </table>
           </div>
 
-          {/* Pagination */}
           <div className="flex justify-start items-center gap-3 mt-4">
             {renderPaginationButtons()}
           </div>
         </>
       )}
 
-      {/* Delete Modal */}
       <DeleteModal
         isOpen={deleteModal.isOpen}
         onClose={handleDeleteCancel}

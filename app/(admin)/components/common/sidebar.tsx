@@ -32,32 +32,32 @@ interface SidebarProps {
 const menuItems: MenuItem[] = [
   {
     name: 'Dashboard',
-    href: '/dashboard',
+    href: '/',
     icon: LayoutDashboard
   },
   {
     name: 'Manage Users',
-    href: '/dashboard/users',
+    href: '/users',
     icon: Users
   },
   {
     name: 'Manage Products',
-    href: '/dashboard/products',
+    href: '/products',
     icon: Package
   },
   {
     name: 'Boost Products',
-    href: '/dashboard/boost',
+    href: '/boost',
     icon: Rocket
   },
   {
     name: 'Reports & Analytics',
-    href: '/dashboard/reports',
+    href: '/reports',
     icon: BarChart3
   },
   {
     name: 'Settings',
-    href: '/dashboard/settings',
+    href: '/settings',
     icon: Settings
   }
 ]
