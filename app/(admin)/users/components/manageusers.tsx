@@ -2,6 +2,7 @@
 import { MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react"
 import { useState, useEffect } from "react"
 import DeleteModal from "../../components/common/delete-modal"
+import { UserService } from "@/userservice/user.service"
 
 const userData = [
   {
@@ -114,9 +115,26 @@ const userData = [
   },
 ]
 
+
+interface User {
+  id: string;
+  email: string;
+  user_name: string;
+  location?: string;             
+  bought_products: number;
+  sold_products: number;
+  uploaded_products: number;
+  created_at?: Date;            
+  updated_at?: Date;
+}
+
+
 export default function ManageUsers() {
-  const [users, setUsers] = useState(userData)
+
+  
+  const [users, setUsers] = useState<User[]>([])
   const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages,setTotalPages]= useState<number>(1)
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean
     userId: string | null
@@ -128,22 +146,27 @@ export default function ManageUsers() {
   })
   const [isDeleting, setIsDeleting] = useState(false)
 
-  useEffect(() => {
-    const savedUsers = localStorage.getItem('users')
-    if (savedUsers) {
-      try {
-        const parsedUsers = JSON.parse(savedUsers)
-        setUsers(parsedUsers)
-      } catch (error) {
-        console.error('Error parsing users from localStorage:', error)
+    const fetchManageUsers = async ()=>{
+      try{
+        const res = await UserService.getUsers( {page:currentPage,perPage:2})
+        if(res.data.success){
+          setUsers(res.data.data)
+          setTotalPages(res.data.pagination.totalPages)
+          // console.log(res.data.pagination)
+        }
+        console.log(res.data.success)
+      }catch(err){
+          console.log(err)
       }
-    } else {
-      localStorage.setItem('users', JSON.stringify(userData))
+      
     }
-  }, [])
+
+  useEffect(() =>  {
+    fetchManageUsers()
+  }, [ ])
 
   const itemsPerPage = 10
-  const totalPages = Math.ceil(users.length / itemsPerPage)
+  // const totalPages = Math.ceil(users.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const currentUsers = users.slice(startIndex, endIndex)
@@ -313,13 +336,28 @@ export default function ManageUsers() {
                 </tr>
               </thead>
               <tbody>
+
+
+               
+                {/* interface User {
+  id: string;
+  email: string;
+  user_name: string;
+  location?: string;             
+  bought_products: number;
+  sold_products: number;
+  uploaded_products: number;
+  created_at?: Date;             
+  updated_at?: Date;
+} */}
+                
                 {currentUsers.map((user, index) => (
                   <tr key={user.id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
                     <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                       {startIndex + index + 1}
                     </th>
                     <td className="px-6 py-4">
-                      {user.userName}
+                      {user.user_name}
                     </td>
                     <td className="px-6 py-4">
                       {user.email}
@@ -328,17 +366,17 @@ export default function ManageUsers() {
                       {user.location}
                     </td>
                     <td className="px-6 py-4">
-                      {user.boughtProducts.toString().padStart(2, "0")}
+                      {user.bought_products.toString().padStart(2, "0")}
                     </td>
                     <td className="px-6 py-4">
-                      {user.soldProducts.toString().padStart(2, "0")}
+                      {user.sold_products.toString().padStart(2, "0")}
                     </td>
                     <td className="px-6 py-4">
-                      {user.uploadedProducts.toString().padStart(2, "0")}
+                      {user.uploaded_products.toString().padStart(2, "0")}
                     </td>
                     <td className="px-6 py-4">
                       <button 
-                        onClick={() => handleDeleteClick(user.id, user.userName)}
+                        onClick={() => handleDeleteClick(user.id, user.user_name)}
                         className="w-5 h-5 flex items-center justify-center hover:bg-gray-100 rounded"
                       >
                         <MoreHorizontal className="w-4 h-4 text-gray-600" />
