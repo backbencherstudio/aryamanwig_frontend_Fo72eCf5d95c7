@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./components/common/sidebar";
 import Topbar from "./components/common/topbar";
+import { CookieHelper } from "@/helper/cookie.helper";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -10,6 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   // Handle window resize
   useEffect(() => {
+    // CookieHelper.set({key:"access_token",value:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRhbnZpckBnbWFpbC5jb20iLCJzdWIiOiJjbWdicjA2cWkwMDA1MTNjY3kxYjM0NmI4IiwidHlwZSI6InVzZXIiLCJpYXQiOjE3NjM2MDY4MzAsImV4cCI6MTc2NDQ3MDgzMH0.qsfUjMvwzt1a"})
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
         setIsMobileOpen(false);

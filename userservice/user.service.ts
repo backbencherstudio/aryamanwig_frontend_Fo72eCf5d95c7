@@ -73,7 +73,7 @@ export const UserService = {
         return await Fetch.post('/auth/verify-email', { email,token,password}, config);
     },
     
-    getUsers: async ({limit,page}:{limit:number,page:number}) => {
+    getUsers: async ({perPage,page}:{perPage:number,page:number}) => {
         const userToken = CookieHelper.get({ key: "access_token" });
         const config = {
             headers: {
@@ -81,8 +81,42 @@ export const UserService = {
                 Authorization: `Bearer ${userToken}`,
             },
         };
-        return await Fetch.get('/users', config);
+        return await Fetch.get(`/admin/dashborad/active-users-product?perPage=${perPage}&page=${page}`, config);
     },
+
+    getProductUploadRequest: async ({perPage,page}:{perPage:number,page:number}) => {
+        const userToken = CookieHelper.get({ key: "access_token" });
+        const config = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${userToken}`,
+            },
+        };
+        return await Fetch.get(`/admin/dashborad/product-upload-requests?perPage=${perPage}&page=${page}`, config);
+    },
+
+    acceptProduct: async ( productId:string) => {
+        const userToken = CookieHelper.get({ key: "access_token" });
+        const config = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${userToken}`,
+            },
+        };
+        return await Fetch.post(`/admin/dashborad/approve-product/${productId}`,{}, config);
+    },
+
+    rejectProduct: async ( productId:string) => {
+        const userToken = CookieHelper.get({ key: "access_token" });
+        const config = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${userToken}`,
+            },
+        };
+        return await Fetch.post(`/admin/dashborad/reject-product/${productId}`,{}, config);
+    },
+
     getTasks: async ({limit,page}:{limit?:number,page?:number}) => {
         const userToken = CookieHelper.get({ key: "access_token" });
         const config = {
