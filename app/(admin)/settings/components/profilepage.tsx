@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useForm, UseFormRegister, FieldErrors } from "react-hook-form"
 import { Edit, ChevronDown, Upload, X } from "lucide-react"
+import { UserService } from "@/userservice/user.service"
 
 interface ProfileData {
   firstName: string
@@ -10,7 +11,18 @@ interface ProfileData {
   email: string
   phone: string
   address: string
-  language: string
+}
+
+type profileType={
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  address: string;
+  avatar_url: string;
+  date_of_birth: string;
+  gender: string;
+  phone_number: string;
 }
 
 const PROFILE_IMAGE_URL = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face"
@@ -22,26 +34,50 @@ export default function ProfilePage() {
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [profileImage, setProfileImage] = useState<string>(PROFILE_IMAGE_URL)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [profile,setProfile] = useState<profileType>();
+  const [imageFile,setImageFile] = useState<File>()
   
   const defaultValues: ProfileData = {
-    firstName: "Courtney",
-    lastName: "Henry",
-    email: "debra.holt@example.com",
-    phone: "016735555728",
-    address: "2464 Royal Ln. Mesa, New Jersey 45463",
-    language: "English",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
   }
 
-  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<ProfileData>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<ProfileData>({
     defaultValues
   })
 
   const watchedValues = watch()
 
-  const onSubmit = (data: ProfileData) => {
-    console.log("Form submitted with data:", data)
-    console.log("Profile image:", profileImage)
+  const onSubmit = async(data: ProfileData) => {
+    const fd = new FormData();
+    if(data?.firstName){
+      fd.append('first_name',data?.firstName);
+    }
+    if(data?.lastName){
+      fd.append('last_name',data?.lastName);
+    }
+    if(data?.email){
+      fd.append('email',data?.email);
+    }
+    if(data?.phone){
+      fd.append('phone_number',data?.phone);
+    }
+    if(data?.address){
+      fd.append('address',data?.address);
+    }
+    if(imageFile){
+      fd.append('image',imageFile);
+    }
+    try{
+      const res = await UserService?.updateMe(fd);
+      console.log(res);
+    }catch(err){
+      console.log(err);
+    }
     setIsEditingPersonalInfo(false)
     setIsEditingProfile(false)
   }
@@ -58,9 +94,31 @@ export default function ProfilePage() {
     setIsEditingProfile(false)
   }
 
+  const getProfile= async()=>{
+    try{
+      const res = await UserService?.me();
+      if(res?.data?.success){
+        const value = res?.data?.data;
+        setProfileImage(PROFILE_IMAGE_URL || value?.avatar_url)
+        setValue('firstName',value?.first_name);
+        setValue('lastName',value?.last_name || "");
+        setValue('email',value?.email);
+        setValue('phone',value?.phone_number || '');
+        setValue('address',value?.address);
+      }
+    }catch(err){
+      console.log(err)
+    }
+  }
+
+  useEffect(()=>{
+    getProfile();
+  },[])
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log('File input changed:', event.target.files)
     const file = event.target.files?.[0]
+    setImageFile(file);
     if (file) {
       console.log('Selected file:', file.name, file.type, file.size)
       
@@ -79,7 +137,6 @@ export default function ProfilePage() {
       const reader = new FileReader()
       reader.onload = (e) => {
         const result = e.target?.result as string
-        console.log('Image loaded successfully')
         setImagePreview(result)
         setProfileImage(result)
       }
@@ -165,7 +222,7 @@ function ProfileSection({
     <div className="flex flex-col gap-4">
       <SectionHeader title="My Profile" />
 
-      <div className="px-5 py-6 rounded-xl outline outline-1 outline-offset-[-1px] outline-gray-200 flex justify-between items-start">
+      <div className="px-5 py-6 rounded-xl outline outline-offset-[-1px] outline-gray-200 flex justify-between items-start">
         <div className="flex items-center gap-3.5">
           <div className="relative">
             <img 
@@ -280,7 +337,7 @@ function PersonalInfoSection({
     <div className="flex flex-col gap-4">
       <SectionHeader title="Personal Info" />
 
-      <div className="px-5 py-6 rounded-xl outline outline-1 outline-offset-[-1px] outline-gray-200 flex justify-between items-start">
+      <div className="px-5 py-6 rounded-xl outline outline-offset-[-1px] outline-gray-200 flex justify-between items-start">
         {isEditing ? (
           <PersonalInfoForm register={register} errors={errors} />
         ) : (
@@ -304,8 +361,7 @@ function PersonalInfoDisplay({ profileData }: { profileData: ProfileData }) {
       { label: "Phone Number", value: profileData.phone },
     ],
     [
-      { label: "Address", value: profileData.address },
-      { label: "Language", value: profileData.language },
+      { label: "Address", value: profileData.address }
     ],
   ]
 
@@ -345,7 +401,6 @@ function PersonalInfoForm({
     ],
     [
       { key: "address" as keyof ProfileData, label: "Address", type: "text" },
-      { key: "language" as keyof ProfileData, label: "Language", type: "select" },
     ],
   ]
 
@@ -385,7 +440,7 @@ function FormField({
   return (
     <div className="w-80 flex flex-col gap-2">
       <label className="text-neutral-600 text-sm font-medium font-['Roboto'] cursor-pointer">{label}</label>
-      <div className="h-9 p-3 rounded-lg outline outline-1 outline-offset-[-1px] outline-gray-200 flex items-center gap-2.5 relative cursor-pointer">
+      <div className="h-9 p-3 rounded-lg outline outline-offset-[-1px] outline-gray-200 flex items-center gap-2.5 relative cursor-pointer">
         {type === "select" ? (
           <>
             <select
@@ -403,6 +458,7 @@ function FormField({
         ) : (
             <input
               type={type}
+              disabled={type === "email"}
               {...register(fieldKey, { 
                 required: `${label} is required`,
                 ...(type === "email" && {
@@ -412,7 +468,7 @@ function FormField({
                   }
                 })
               })}
-              className="flex-1 text-zinc-500 text-sm font-normal font-['Roboto'] leading-snug bg-transparent outline-none cursor-text"
+              className={`flex-1 text-zinc-500 text-sm font-normal font-['Roboto'] leading-snug bg-transparent outline-none ${type === "email"?"cursor-not-allowed":"cursor-text"}`}
             />
         )}
       </div>
@@ -437,7 +493,7 @@ function EditButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="px-3.5 py-2 bg-gray-50 rounded-md outline outline-1 outline-offset-[-1px] outline-gray-200 flex items-center gap-2.5 hover:bg-gray-100 transition-colors cursor-pointer"
+      className="px-3.5 py-2 bg-gray-50 rounded-md outline  outline-offset-[-1px] outline-gray-200 flex items-center gap-2.5 hover:bg-gray-100 transition-colors cursor-pointer"
     >
       <span className="text-neutral-600 text-sm font-medium font-['Roboto'] leading-tight">Edit</span>
       <Edit className="w-5 h-5 text-neutral-600" />

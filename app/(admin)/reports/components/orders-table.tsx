@@ -1,186 +1,60 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { UserService } from "@/userservice/user.service"
 
 type OrderStatus = "completed" | "pending" | "cancelled"
 
 interface Order {
-  id: string
-  no: string
-  productName: string
-  productImage: string
-  sellerName: string
-  buyerName: string
-  deliveryAddress: string
-  quantity: string
-  amount: string
-  deliveryDate: string
-  status: OrderStatus
+  No: string;
+  Product_Name: string;
+  Product_Photo: string;
+  Seller_Name: string;
+  Buyer_Name: string;
+  Delivery_Address: string;
+  Qnty: string;
+  Amount: string;
+  Action: OrderStatus;
 }
-
-const mockOrders: Order[] = [
-  {
-    id: "1",
-    no: "01",
-    productName: "Man Exclusive T-shirt",
-    productImage: "/images/p1.png",
-    sellerName: "David Elson",
-    buyerName: "Jenny Wilson",
-    deliveryAddress: "Switzerland",
-    quantity: "01",
-    amount: "$20.00",
-    deliveryDate: "Apr 12, 2025",
-    status: "completed",
-  },
-  {
-    id: "2",
-    no: "02",
-    productName: "Baby Dress",
-    productImage: "/images/p2.png",
-    sellerName: "Stephanie Sharkey",
-    buyerName: "Savannah Nguyen",
-    deliveryAddress: "Switzerland",
-    quantity: "02",
-    amount: "$40.00",
-    deliveryDate: "Apr 12, 2025",
-    status: "completed",
-  },
-  {
-    id: "3",
-    no: "03",
-    productName: "Home Accessories",
-    productImage: "/images/p3.png",
-    sellerName: "Mary Freund",
-    buyerName: "Darlene Robertson",
-    deliveryAddress: "Switzerland",
-    quantity: "01",
-    amount: "$20.00",
-    deliveryDate: "Apr 12, 2025",
-    status: "completed",
-  },
-  {
-    id: "4",
-    no: "04",
-    productName: "Double Seat Sofa",
-    productImage: "/images/p4.png",
-    sellerName: "Mary Freund",
-    buyerName: "Eleanor Pena",
-    deliveryAddress: "Switzerland",
-    quantity: "01",
-    amount: "$20.00",
-    deliveryDate: "Apr 12, 2025",
-    status: "completed",
-  },
-  {
-    id: "5",
-    no: "05",
-    productName: "Gaming Chair",
-    productImage: "/images/p5.png",
-    sellerName: "John Smith",
-    buyerName: "Alice Johnson",
-    deliveryAddress: "Switzerland",
-    quantity: "01",
-    amount: "$150.00",
-    deliveryDate: "Apr 15, 2025",
-    status: "pending",
-  },
-  {
-    id: "6",
-    no: "06",
-    productName: "Laptop Stand",
-    productImage: "/images/p7.png",
-    sellerName: "Tech Store",
-    buyerName: "Bob Wilson",
-    deliveryAddress: "Switzerland",
-    quantity: "02",
-    amount: "$80.00",
-    deliveryDate: "Apr 18, 2025",
-    status: "cancelled",
-  },
-  {
-    id: "7",
-    no: "07",
-    productName: "Wireless Headphones",
-    productImage: "/images/p8.png",
-    sellerName: "Audio Store",
-    buyerName: "Sarah Davis",
-    deliveryAddress: "Switzerland",
-    quantity: "01",
-    amount: "$120.00",
-    deliveryDate: "Apr 20, 2025",
-    status: "completed",
-  },
-  {
-    id: "8",
-    no: "08",
-    productName: "Smart Watch",
-    productImage: "/images/p1.png",
-    sellerName: "Tech Gadgets",
-    buyerName: "Mike Johnson",
-    deliveryAddress: "Switzerland",
-    quantity: "01",
-    amount: "$200.00",
-    deliveryDate: "Apr 22, 2025",
-    status: "pending",
-  },
-  {
-    id: "9",
-    no: "09",
-    productName: "Coffee Maker",
-    productImage: "/images/p2.png",
-    sellerName: "Home Appliances",
-    buyerName: "Lisa Brown",
-    deliveryAddress: "Switzerland",
-    quantity: "01",
-    amount: "$85.00",
-    deliveryDate: "Apr 25, 2025",
-    status: "cancelled",
-  },
-  {
-    id: "10",
-    no: "10",
-    productName: "Desk Lamp",
-    productImage: "/images/p3.png",
-    sellerName: "Lighting Store",
-    buyerName: "Tom Wilson",
-    deliveryAddress: "Switzerland",
-    quantity: "02",
-    amount: "$45.00",
-    deliveryDate: "Apr 28, 2025",
-    status: "completed",
-  },
-  {
-    id: "11",
-    no: "11",
-    productName: "Double Seat Sofa",
-    productImage: "/images/p4.png",
-    sellerName: "Mary Freund",
-    buyerName: "Eleanor Pena",
-    deliveryAddress: "Switzerland",
-    quantity: "01",
-    amount: "$20.00",
-    deliveryDate: "Apr 28, 2025",
-    status: "completed",
-  },
-]
 
 export default function OrdersTable() {
   const [activeTab, setActiveTab] = useState<OrderStatus>("completed")
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 6
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentOrders,setCurrentOrders] = useState<Order[]>([])
+  const [totalPages,setTotalPages] = useState<number>(1);
+  const [hasPrev,setHasPrev] = useState<boolean>(false)
+  const [hasNext,setHasNext] = useState<boolean>(false)
 
   // Filter orders based on active tab
-  const filteredOrders = mockOrders.filter((order) => order.status === activeTab)
+  // const filteredOrders = mockOrders.filter((order) => order.status === activeTab)
 
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const currentOrders = filteredOrders.slice(startIndex, endIndex)
+  // // Calculate pagination
+  // const totalPages = Math.ceil(filteredOrders.length / itemsPerPage)
+  // const startIndex = (currentPage - 1) * itemsPerPage
+  // const endIndex = startIndex + itemsPerPage
+  // const currentOrders = filteredOrders.slice(startIndex, endIndex);
+
+  const getCompletedOrders = async()=>{
+    try{
+      const res = await UserService?.getRecentCompleteOrders({type:activeTab,limit:4,page:currentPage});
+      if(res?.data?.success){
+        setCurrentOrders(res?.data?.data);
+        setTotalPages(res?.data?.pagination?.totalPages);
+        setHasNext(res?.data?.pagination?.hasNextPage);
+        setHasPrev(res?.data?.pagination?.hasPrevPage);
+      }
+    }catch(err){
+      console.log(err);
+    }
+  }
+
+  useEffect(()=>{
+    getCompletedOrders()
+  },[activeTab,currentPage])
 
   const getStatusBadge = (status: OrderStatus) => {
-    switch (status) {
+    switch (status?.toLocaleLowerCase()) {
       case "completed":
         return (
           <div className="w-20 px-2 py-1 bg-lime-50 rounded flex justify-center items-center gap-1">
@@ -272,50 +146,38 @@ export default function OrdersTable() {
               <th scope="col" className="px-6 py-3">
                 Amount
               </th>
-              <th scope="col" className="px-6 py-3">
-                Delivery Date
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Action
-              </th>
             </tr>
           </thead>
           <tbody>
-            {currentOrders.map((order, index) => (
-              <tr key={order.id} className="bg-white border-b border-gray-200 hover:bg-gray-50">
+            {currentOrders.map((order) => (
+              <tr key={order?.No} className="bg-white border-b border-gray-200 hover:bg-gray-50">
                 <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {order.no}
+                  {order.No}
                 </th>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <img
                       className="w-10 h-10 rounded"
-                      src={order.productImage || "/placeholder.svg"}
-                      alt={order.productName}
+                      src={order?.Product_Photo || "/placeholder.svg"}
+                      alt={order?.Product_Name}
                     />
-                    <div className="text-gray-800 text-sm font-normal font-['Roboto'] leading-tight">{order.productName}</div>
+                    <div className="text-gray-800 text-sm font-normal font-['Roboto'] leading-tight">{order?.Product_Name}</div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  {order.sellerName}
+                  {order?.Seller_Name}
                 </td>
                 <td className="px-6 py-4">
-                  {order.buyerName}
+                  {order?.Buyer_Name}
                 </td>
                 <td className="px-6 py-4">
-                  {order.deliveryAddress}
+                  {order?.Delivery_Address}
                 </td>
                 <td className="px-6 py-4">
-                  {order.quantity}
+                  {order?.Qnty}
                 </td>
                 <td className="px-6 py-4">
-                  {order.amount}
-                </td>
-                <td className="px-6 py-4">
-                  {order.deliveryDate}
-                </td>
-                <td className="flex items-center px-6 py-4">
-                  {getStatusBadge(order.status)}
+                  {order?.Amount}
                 </td>
               </tr>
             ))}
@@ -396,7 +258,7 @@ export default function OrdersTable() {
 
         <button
           onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-          disabled={currentPage === totalPages}
+          disabled={!hasNext}
           className="w-8 h-8 p-1 rounded-lg border border-gray-200 flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ChevronRight className="w-4 h-4 text-gray-500" />

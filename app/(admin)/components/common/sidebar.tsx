@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
@@ -10,11 +10,11 @@ import {
   BarChart3, 
   Rocket, 
   Settings, 
-  LogOut,
-  Menu,
-  X
+  LogOut
 } from 'lucide-react'
 import Logo from '@/public/icons/logo'
+import { CookieHelper } from '@/helper/cookie.helper';
+import { useRouter } from 'next/navigation'
 
 interface MenuItem {
   name: string
@@ -63,8 +63,13 @@ const menuItems: MenuItem[] = [
 ]
 
 export default function Sidebar({ isCollapsed, isMobileOpen, onToggle, onMobileToggle }: SidebarProps) {
-  const pathname = usePathname()
-
+  const pathname = usePathname();
+  const router = useRouter();
+  const [logoutPopup,setLogoutPopup] = useState(false);
+  const handleLogout= ()=>{
+    CookieHelper?.destroy({key:"access_token"});
+    router.replace('/login')
+  }
   return (
     <>
       {/* Mobile Overlay */}
@@ -130,7 +135,7 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onToggle, onMobileT
 
         {/* Logout Section */}
         <div className="p-4 border-t border-gray-200">
-          <button className={`flex items-center gap-3 px-4 py-3 w-full text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-all duration-200 ${isCollapsed ? 'justify-center' : ''}`}>
+          <button onClick={handleLogout} className={`flex items-center gap-3 px-4 py-3 w-full text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-all duration-200 ${isCollapsed ? 'justify-center' : ''}`}>
             <LogOut className="w-5 h-5 text-gray-600 flex-shrink-0" />
             {!isCollapsed && <span className="font-medium">Log out</span>}
           </button>

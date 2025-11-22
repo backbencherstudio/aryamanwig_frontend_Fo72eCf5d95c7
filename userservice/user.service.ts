@@ -17,7 +17,7 @@ export const UserService = {
             },
         };
 
-        return await Fetch.post(`/auth/login`, { email: email, password: password }, config);
+        return await Fetch.post(`/auth/login`, { email, password }, config);
     },
 
     me: async () => {
@@ -29,6 +29,16 @@ export const UserService = {
             },
         };
         return await Fetch.get('/auth/me', config);
+    },
+    
+    updateMe: async (data:any) => {
+        const userToken = CookieHelper.get({ key: "access_token" });
+        const config = {
+            headers: {
+                Authorization: `Bearer ${userToken}`,
+            },
+        };
+        return await Fetch.patch('/auth/update',data, config);
     },
     
     logout: async (id: string) => {
@@ -116,8 +126,7 @@ export const UserService = {
         };
         return await Fetch.post(`/admin/dashborad/reject-product/${productId}`,{}, config);
     },
-
-    getTasks: async ({limit,page}:{limit?:number,page?:number}) => {
+    getRecentCompleteOrders: async ({type,limit,page}:{type:string,limit?:number,page?:number}) => {
         const userToken = CookieHelper.get({ key: "access_token" });
         const config = {
             headers: {
@@ -125,7 +134,12 @@ export const UserService = {
                 Authorization: `Bearer ${userToken}`,
             },
         };
-        return await Fetch.get('/tasks', config);
+        if(type === "completed")
+            return await Fetch.get(`/admin/dashborad/recent-complete-orders?perPage=${limit}&page=${page}`, config);
+        if(type === "pending")
+            return await Fetch.get(`/admin/dashborad/recent-pending-orders?perPage=${limit}&page=${page}`, config);
+        if(type === "cancelled")
+            return await Fetch.get(`/admin/dashborad/recent-cancelled-orders?perPage=${limit}&page=${page}`, config);
     },
     getPayments: async ({limit,page}:{limit?:number,page?:number}) => {
         const userToken = CookieHelper.get({ key: "access_token" });
